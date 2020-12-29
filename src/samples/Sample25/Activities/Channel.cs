@@ -28,7 +28,7 @@ namespace Sample25.Activities
         {
             // Read sensor output provided as workflow input. 
             var value = context.Workflow.Input.GetVariable<double>(SensorId);
-
+            context.SetVariable("luna", "lunaVar");
             // Set the value as an output of this activity. 
             Output.SetVariable("Value", value);
             return Done();

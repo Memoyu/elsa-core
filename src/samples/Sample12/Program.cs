@@ -9,6 +9,7 @@ using Elsa.Services;
 using Elsa.Services.Extensions;
 using Elsa.Services.Models;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Sample12
@@ -42,7 +43,7 @@ namespace Sample12
                 // Resume the workflow with the received stimulus.
                 var triggeredExecutionContexts = await invoker.TriggerAsync(nameof(UserTask), new Variables { ["UserAction"] = new Variable(userAction)}, correlationId);
                 executionContext = triggeredExecutionContexts.First();
-
+                var json = JsonConvert.SerializeObject(executionContext.Workflow.Definition);
             } while (executionContext.Workflow.IsExecuting());
         }
 

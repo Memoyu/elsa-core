@@ -10,6 +10,7 @@ namespace Elsa.Activities.UserTask.Activities
 {
     /// <summary>
     /// Stores a set of possible user actions and halts the workflow until one of the actions has been performed.
+    /// 存储一组可能的用户操作，并暂停工作流，直到执行了一个操作为止。
     /// </summary>
     [ActivityDefinition(
         Category = "User Tasks",

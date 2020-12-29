@@ -1,4 +1,5 @@
 using Elsa;
+using Elsa.Activities;
 using Elsa.Activities.Console.Activities;
 using Elsa.Activities.ControlFlow.Activities;
 using Elsa.Expressions;
@@ -14,7 +15,9 @@ namespace Sample25
         public void Build(IWorkflowBuilder builder)
         {
             builder
-                .StartWith<WriteLine>(x => x.TextExpression = new LiteralExpression("Waiting for sensor input."))
+                 .StartWith<SetVariable>(x => { x.VariableName = "glo"; x.ValueExpression = new LiteralExpression("33"); })
+                .Then<WriteLine>(x => x.TextExpression = new LiteralExpression("Waiting for sensor input."))
+
 
                 // Fork execution into two branches to wait for external stimuli from the two channels in parallel. 
                 .Then<Fork>(

@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
 using Elsa.Models;
 using Elsa.Results;
@@ -11,6 +11,7 @@ namespace Elsa.Services.Models
     {
         /// <summary>
         /// Holds persistable activity state.
+        /// 
         /// </summary>
         JObject State { get; set; }
         

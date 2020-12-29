@@ -43,7 +43,6 @@ namespace Sample12
                 // Resume the workflow with the received stimulus.
                 var triggeredExecutionContexts = await invoker.TriggerAsync(nameof(UserTask), new Variables { ["UserAction"] = new Variable(userAction)}, correlationId);
                 executionContext = triggeredExecutionContexts.First();
-                var json = JsonConvert.SerializeObject(executionContext.Workflow.Definition);
             } while (executionContext.Workflow.IsExecuting());
         }
 

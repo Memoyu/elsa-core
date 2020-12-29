@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Elsa.Results;
@@ -24,7 +24,7 @@ namespace Elsa.Services
             return await InvokeAsync(
                 workflowContext,
                 activity,
-                (a) => a.ExecuteAsync(workflowContext, cancellationToken)
+                (a) => a.ExecuteAsync(workflowContext, cancellationToken)//调用Activity的OnExecute方法
             );
         }
 
@@ -58,7 +58,7 @@ namespace Elsa.Services
         {
             try
             {
-                return await invokeAction(activity);
+                return await invokeAction(activity);//执行Activity的OnExecute方法
             }
             catch (Exception e)
             {

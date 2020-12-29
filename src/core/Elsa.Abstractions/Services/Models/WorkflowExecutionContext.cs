@@ -30,6 +30,9 @@ namespace Elsa.Services.Models
 
         public Workflow Workflow { get; }
         public IServiceProvider ServiceProvider { get; }
+        /// <summary>
+        /// 进度Stack中是否有元素
+        /// </summary>
         public bool HasScheduledActivities => scheduledActivities.Any();
         public bool HasScheduledHaltingActivities => scheduledHaltingActivities.Any();
         public IEnumerable<IActivity> ScheduledActivities => scheduledActivities;
@@ -47,7 +50,10 @@ namespace Elsa.Services.Models
                 ScheduleActivity(activity);
             }
         }
-
+        /// <summary>
+        /// 将Activity加入进度栈顶
+        /// </summary>
+        /// <param name="activity"></param>
         public void ScheduleActivity(IActivity activity)
         {
             scheduledActivities.Push(activity);
@@ -69,10 +75,13 @@ namespace Elsa.Services.Models
         public void SetLastResult(object value) => SetLastResult(new Variable(value));
         public void SetLastResult(Variable value) => CurrentScope.LastResult = value;
 
+        /// <summary>
+        /// 执行Activity
+        /// </summary>
         public void Start()
         {
-            Workflow.StartedAt = clock.GetCurrentInstant();
-            Workflow.Status = WorkflowStatus.Executing;
+            Workflow.StartedAt = clock.GetCurrentInstant();//获取当前时间
+            Workflow.Status = WorkflowStatus.Executing;//将工作流的状态改成执行状态
         }
 
         public void Fault(IActivity activity, Exception exception) => Fault(activity, exception.Message, exception);

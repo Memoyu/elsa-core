@@ -37,19 +37,26 @@ namespace Elsa.Services
             var workflowDefinition = workflowBuilder().Build<T>();
             return CreateWorkflow(workflowDefinition, input, workflowInstance, correlationId);
         }
-
+        /// <summary>
+        /// 创建工作流
+        /// </summary>
+        /// <param name="definition"></param>
+        /// <param name="input"></param>
+        /// <param name="workflowInstance"></param>
+        /// <param name="correlationId"></param>
+        /// <returns></returns>
         public Workflow CreateWorkflow(
             WorkflowDefinitionVersion definition,
             Variables input = default,
             WorkflowInstance workflowInstance = default,
             string correlationId = default)
         {
-            if(definition.IsDisabled)
+            if(definition.IsDisabled)//工作流定义已经禁用
                 throw new InvalidOperationException("Cannot instantiate disabled workflow definitions.");
             
-            var activities = CreateActivities(definition.Activities).ToList();
-            var connections = CreateConnections(definition.Connections, activities);
-            var id = idGenerator.Generate();
+            var activities = CreateActivities(definition.Activities).ToList();//创建节点
+            var connections = CreateConnections(definition.Connections, activities);//创建连线
+            var id = idGenerator.Generate();//生成Id
             var workflow = new Workflow(
                 id,
                 definition,
@@ -64,30 +71,49 @@ namespace Elsa.Services
 
             return workflow;
         }
-
+        /// <summary>
+        /// 创建Activity连接线
+        /// </summary>
+        /// <param name="connectionBlueprints"></param>
+        /// <param name="activities"></param>
+        /// <returns></returns>
         private IEnumerable<Connection> CreateConnections(
             IEnumerable<ConnectionDefinition> connectionBlueprints,
             IEnumerable<IActivity> activities)
         {
-            var activityDictionary = activities.ToDictionary(x => x.Id);
+            var activityDictionary = activities.ToDictionary(x => x.Id);//将Activities转换成Dictionary
             return connectionBlueprints.Select(x => CreateConnection(x, activityDictionary));
         }
-
+        /// <summary>
+        /// 创建Activities
+        /// </summary>
+        /// <param name="activityBlueprints"></param>
+        /// <returns></returns>
         private IEnumerable<IActivity> CreateActivities(IEnumerable<ActivityDefinition> activityBlueprints)
         {
             return activityBlueprints.Select(CreateActivity);
         }
 
+        /// <summary>
+        /// 创建Activity操作
+        /// </summary>
+        /// <param name="definition"></param>
+        /// <returns></returns>
         private IActivity CreateActivity(ActivityDefinition definition)
         {
-            var activity = activityResolver.ResolveActivity(definition.Type);
+            var activity = activityResolver.ResolveActivity(definition.Type);//获取Activity实例
 
             activity.State = new JObject(definition.State);
             activity.Id = definition.Id;
 
             return activity;
         }
-
+        /// <summary>
+        /// 创建连接线
+        /// </summary>
+        /// <param name="connectionDefinition"></param>
+        /// <param name="activityDictionary"></param>
+        /// <returns></returns>
         private Connection CreateConnection(
             ConnectionDefinition connectionDefinition,
             IDictionary<string, IActivity> activityDictionary)

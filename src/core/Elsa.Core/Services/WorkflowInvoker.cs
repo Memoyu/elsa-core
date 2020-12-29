@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -61,9 +61,11 @@ namespace Elsa.Services
             string correlationId = default,
             CancellationToken cancellationToken = default)
         {
+            //创建工作流
             var workflow = workflowFactory.CreateWorkflow(workflowDefinition, input, correlationId: correlationId);
+            //获取开始Activity
             var startActivities = workflow.Activities.Find(startActivityIds);
-
+            //执行Activity
             return ExecuteAsync(workflow, false, startActivities, cancellationToken);
         }
 
@@ -212,17 +214,17 @@ namespace Elsa.Services
                 workflow,
                 startActivities,
                 cancellationToken
-            );
+            );//创建工作流上下文
 
             var start = !resume;
 
-            while (workflowExecutionContext.HasScheduledActivities)
+            while (workflowExecutionContext.HasScheduledActivities)//只要进度Stack中存在元素
             {
-                var currentActivity = workflowExecutionContext.PopScheduledActivity();
+                var currentActivity = workflowExecutionContext.PopScheduledActivity();//移除进度Stack元素
 
                 var result = start
-                    ? await ExecuteActivityAsync(workflowExecutionContext, currentActivity, cancellationToken)
-                    : await ResumeActivityAsync(workflowExecutionContext, currentActivity, cancellationToken);
+                    ? await ExecuteActivityAsync(workflowExecutionContext, currentActivity, cancellationToken)//
+                    : await ResumeActivityAsync(workflowExecutionContext, currentActivity, cancellationToken);//
 
                 if (result == null)
                     break;
@@ -345,7 +347,7 @@ namespace Elsa.Services
             IActivity activity,
             CancellationToken cancellationToken)
         {
-            return await InvokeActivityAsync(
+            return await InvokeActivityAsync(//执行Activity
                 workflowContext,
                 activity,
                 async () => await activityInvoker.ExecuteAsync(workflowContext, activity, cancellationToken),
@@ -376,8 +378,8 @@ namespace Elsa.Services
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    workflowContext.Workflow.Status = WorkflowStatus.Aborted;
-                    workflowContext.Workflow.FinishedAt = clock.GetCurrentInstant();
+                    workflowContext.Workflow.Status = WorkflowStatus.Aborted;//状态改为中止
+                    workflowContext.Workflow.FinishedAt = clock.GetCurrentInstant();//获取当前时间，赋值结束时间
                     return null;
                 }
 
@@ -385,6 +387,7 @@ namespace Elsa.Services
             }
             catch (Exception ex)
             {
+                //执行异常
                 FaultWorkflow(workflowContext, activity, ex);
             }
 
@@ -404,6 +407,12 @@ namespace Elsa.Services
             );
         }
 
+        /// <summary>
+        /// 执行异常
+        /// </summary>
+        /// <param name="workflowContext"></param>
+        /// <param name="activity"></param>
+        /// <param name="ex"></param>
         private void FaultWorkflow(WorkflowExecutionContext workflowContext, IActivity activity, Exception ex)
         {
             logger.LogError(
@@ -413,26 +422,33 @@ namespace Elsa.Services
             workflowContext.Fault(activity, ex);
         }
 
+        /// <summary>
+        /// 创建工作流执行上下文
+        /// </summary>
+        /// <param name="workflow"></param>
+        /// <param name="startActivities"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         private async Task<WorkflowExecutionContext> CreateWorkflowExecutionContextAsync(
             Workflow workflow,
             IEnumerable<IActivity> startActivities,
             CancellationToken cancellationToken)
         {
             var workflowExecutionContext = new WorkflowExecutionContext(workflow, clock, serviceProvider);
-            var startActivityList = startActivities?.ToList() ?? workflow.GetStartActivities().Take(1).ToList();
+            var startActivityList = startActivities?.ToList() ?? workflow.GetStartActivities().Take(1).ToList();//获取开始Activities集合的第一个元素
 
             foreach (var startActivity in startActivityList)
             {
-                if (await startActivity.CanExecuteAsync(workflowExecutionContext, cancellationToken))
-                    workflowExecutionContext.ScheduleActivity(startActivity);
+                if (await startActivity.CanExecuteAsync(workflowExecutionContext, cancellationToken))//判断Activity是否能执行
+                    workflowExecutionContext.ScheduleActivity(startActivity);//将Activity加入进度Stack
             }
 
-            if (workflowExecutionContext.HasScheduledActivities)
+            if (workflowExecutionContext.HasScheduledActivities)//判断进度表中是否有Activity
             {
-                workflow.BlockingActivities.RemoveWhere(workflowExecutionContext.ScheduledActivities.Contains);
+                workflow.BlockingActivities.RemoveWhere(workflowExecutionContext.ScheduledActivities.Contains);//移除阻塞的Activity
 
-                if (workflowExecutionContext.Workflow.Status == WorkflowStatus.Idle)
-                    workflowExecutionContext.Start();
+                if (workflowExecutionContext.Workflow.Status == WorkflowStatus.Idle)//workflow是否为空闲状态
+                    workflowExecutionContext.Start();//修改执行时间、工作流状态
             }
 
             return workflowExecutionContext;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -52,6 +52,7 @@ namespace Elsa.Services
 
         /// <summary>
         /// Starts new workflows that start with the specified activity name and resumes halted workflows that are blocked on activities with the specified activity name.
+        /// 开始
         /// </summary>
         Task<IEnumerable<WorkflowExecutionContext>> TriggerAsync(
             string activityType,

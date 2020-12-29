@@ -24,6 +24,11 @@ namespace Elsa.Services
 
         private IDictionary<string, Type> ActivityTypeLookup => lazyActivityTypeLookup.Value;
         
+        /// <summary>
+        /// 解析活动点类型
+        /// </summary>
+        /// <param name="activityTypeName">类型名</param>
+        /// <returns></returns>
         public Type ResolveActivityType(string activityTypeName)
         {
             if (!ActivityTypeLookup.ContainsKey(activityTypeName))
@@ -40,12 +45,18 @@ namespace Elsa.Services
 
         }
         
+        /// <summary>
+        /// 解析活动点
+        /// </summary>
+        /// <param name="activityTypeName"></param>
+        /// <param name="setup"></param>
+        /// <returns></returns>
         public IActivity ResolveActivity(string activityTypeName, Action<IActivity> setup = null)
         {
             var activityType = ResolveActivityType(activityTypeName);
-            var activity = (IActivity) ActivatorUtilities.GetServiceOrCreateInstance(serviceProvider, activityType);
+            var activity = (IActivity) ActivatorUtilities.GetServiceOrCreateInstance(serviceProvider, activityType);//创建实例
 
-            setup?.Invoke(activity);
+            setup?.Invoke(activity);//执行
             return activity;
         }
         
